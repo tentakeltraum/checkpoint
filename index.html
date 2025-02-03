@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unser Gedankenarchiv</title>
+  <style>
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      background-color: #f0f0f0; /* Pastellgrau */
+      color: #333; /* Dunkelgrau für Text */
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    h1 {
+      font-size: 2.5rem;
+      text-align: center;
+      color: #ff6f61; /* Pastellorange */
+      text-shadow: 2px 2px #ffcc5c; /* Pastellgelb */
+    }
+    textarea, input, button {
+      font-family: 'Courier New', Courier, monospace;
+      background-color: #ffffff; /* Weiß */
+      color: #333; /* Dunkelgrau */
+      border: 2px solid #ff6f61; /* Pastellorange */
+      padding: 10px;
+      margin: 10px 0;
+      width: 100%;
+      font-size: 0.9rem;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #ff6f61; /* Pastellorange */
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #ffcc5c; /* Pastellgelb */
+    }
+    .entry {
+      background-color: #ffffff; /* Weiß */
+      padding: 15px;
+      margin: 20px 0;
+      border: 2px solid #ffcc5c; /* Pastellgelb */
+      border-radius: 5px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .tags {
+      margin: 10px 0;
+      font-size: 0.8rem;
+      color: #ff6f61; /* Pastellorange */
+    }
+    .comments {
+      margin-top: 10px;
+      padding-left: 20px;
+      border-left: 2px solid #ffcc5c; /* Pastellgelb */
+    }
+    .comment {
+      margin: 5px 0;
+      font-size: 0.8rem;
+      color: #333; /* Dunkelgrau */
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      border: 2px solid #ff6f61; /* Pastellorange */
+      margin-top: 10px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Unser Gedankenarchiv</h1>
+  <textarea id="thought" rows="4" placeholder="Schreibe deine Gedanken hier..."></textarea>
+  <input type="text" id="tags" placeholder="Tags (z. B. #Natur #Reise)">
+  <input type="file" id="image" accept="image/*">
+  <button onclick="addEntry()">Hinzufügen</button>
+
+  <div id="entries"></div>
+
+  <script>
+    function addEntry() {
+      const thought = document.getElementById("thought").value.trim();
+      const tags = document.getElementById("tags").value.trim();
+      const image = document.getElementById("image").files[0];
+
+      if (!thought && !image) return;
+
+      const entry = document.createElement("div");
+      entry.className = "entry";
+
+      // Gedanken hinzufügen
+      if (thought) {
+        const thoughtElement = document.createElement("p");
+        thoughtElement.textContent = thought;
+        entry.appendChild(thoughtElement);
+      }
+
+      // Tags hinzufügen
+      if (tags) {
+        const tagsElement = document.createElement("div");
+        tagsElement.className = "tags";
+        tagsElement.textContent = `Tags: ${tags}`;
+        entry.appendChild(tagsElement);
+      }
+
+      // Bild hinzufügen
+      if (image) {
+        const imageElement = document.createElement("img");
+        imageElement.src = URL.createObjectURL(image);
+        entry.appendChild(imageElement);
+      }
+
+      // Kommentarsektion hinzufügen
+      const commentsSection = document.createElement("div");
+      commentsSection.className = "comments";
+
+      const commentInput = document.createElement("textarea");
+      commentInput.rows = 2;
+      commentInput.placeholder = "Füge einen Kommentar hinzu...";
+      commentsSection.appendChild(commentInput);
+
+      const commentButton = document.createElement("button");
+      commentButton.textContent = "Kommentar hinzufügen";
+      commentButton.onclick = function () {
+        addComment(commentsSection, commentInput.value);
+        commentInput.value = ""; // Eingabefeld leeren
+      };
+      commentsSection.appendChild(commentButton);
+
+      entry.appendChild(commentsSection);
+
+      // Eintrag zur Liste hinzufügen
+      document.getElementById("entries").appendChild(entry);
+
+      // Felder leeren
+      document.getElementById("thought").value = "";
+      document.getElementById("tags").value = "";
+      document.getElementById("image").value = "";
+    }
+
+    function addComment(commentsSection, commentText) {
+      if (!commentText.trim()) return;
+
+      const commentElement = document.createElement("div");
+      commentElement.className = "comment";
+      commentElement.textContent = commentText;
+      commentsSection.appendChild(commentElement);
+    }
+  </script>
+</body>
+</html>
