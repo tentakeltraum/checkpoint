@@ -70,10 +70,38 @@
       margin-top: 10px;
       border-radius: 5px;
     }
+    .delete-image {
+      background-color: #ff6f61; /* Pastellorange */
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      margin-top: 10px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .delete-image:hover {
+      background-color: #ffcc5c; /* Pastellgelb */
+    }
+    .toc {
+      margin-bottom: 20px;
+    }
+    .toc a {
+      color: #ff6f61; /* Pastellorange */
+      text-decoration: none;
+    }
+    .toc a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
   <h1>Unser Gedankenarchiv</h1>
+  <div class="toc">
+    <h2>Inhaltsverzeichnis</h2>
+    <div id="toc-list"></div>
+    <input type="text" id="search-tags" placeholder="Nach Tags suchen (z. B. #Natur)" oninput="filterEntries()">
+  </div>
+
   <textarea id="thought" rows="4" placeholder="Schreibe deine Gedanken hier..."></textarea>
   <input type="text" id="tags" placeholder="Tags (z. B. #Natur #Reise)">
   <input type="file" id="image" accept="image/*">
@@ -82,6 +110,8 @@
   <div id="entries"></div>
 
   <script>
+    let entries = [];
+
     function addEntry() {
       const thought = document.getElementById("thought").value.trim();
       const tags = document.getElementById("tags").value.trim();
@@ -89,29 +119,61 @@
 
       if (!thought && !image) return;
 
-      const entry = document.createElement("div");
-      entry.className = "entry";
+      const entry = {
+        id: Date.now(), // Eindeutige ID für jeden Eintrag
+        thought,
+        tags,
+        image: image ? URL.createObjectURL(image) : null,
+        comments: []
+      };
+
+      entries.push(entry);
+      renderEntry(entry);
+      updateTOC();
+
+      // Felder leeren
+      document.getElementById("thought").value = "";
+      document.getElementById("tags").value = "";
+      document.getElementById("image").value = "";
+    }
+
+    function renderEntry(entry) {
+      const entryElement = document.createElement("div");
+      entryElement.className = "entry";
+      entryElement.id = `entry-${entry.id}`;
 
       // Gedanken hinzufügen
-      if (thought) {
+      if (entry.thought) {
         const thoughtElement = document.createElement("p");
-        thoughtElement.textContent = thought;
-        entry.appendChild(thoughtElement);
+        thoughtElement.textContent = entry.thought;
+        entryElement.appendChild(thoughtElement);
       }
 
       // Tags hinzufügen
-      if (tags) {
+      if (entry.tags) {
         const tagsElement = document.createElement("div");
         tagsElement.className = "tags";
-        tagsElement.textContent = `Tags: ${tags}`;
-        entry.appendChild(tagsElement);
+        tagsElement.textContent = `Tags: ${entry.tags}`;
+        entryElement.appendChild(tagsElement);
       }
 
       // Bild hinzufügen
-      if (image) {
+      if (entry.image) {
+        const imageContainer = document.createElement("div");
         const imageElement = document.createElement("img");
-        imageElement.src = URL.createObjectURL(image);
-        entry.appendChild(imageElement);
+        imageElement.src = entry.image;
+        imageContainer.appendChild(imageElement);
+
+        const deleteButton = document.createElement("button");
+        deleteButton.className = "delete-image";
+        deleteButton.textContent = "Bild löschen";
+        deleteButton.onclick = function () {
+          entry.image = null;
+          renderEntries();
+        };
+        imageContainer.appendChild(deleteButton);
+
+        entryElement.appendChild(imageContainer);
       }
 
       // Kommentarsektion hinzufügen
@@ -126,29 +188,54 @@
       const commentButton = document.createElement("button");
       commentButton.textContent = "Kommentar hinzufügen";
       commentButton.onclick = function () {
-        addComment(commentsSection, commentInput.value);
-        commentInput.value = ""; // Eingabefeld leeren
+        if (commentInput.value.trim()) {
+          entry.comments.push(commentInput.value.trim());
+          renderEntries();
+        }
       };
       commentsSection.appendChild(commentButton);
 
-      entry.appendChild(commentsSection);
+      // Kommentare anzeigen
+      entry.comments.forEach(comment => {
+        const commentElement = document.createElement("div");
+        commentElement.className = "comment";
+        commentElement.textContent = comment;
+        commentsSection.appendChild(commentElement);
+      });
+
+      entryElement.appendChild(commentsSection);
 
       // Eintrag zur Liste hinzufügen
-      document.getElementById("entries").appendChild(entry);
-
-      // Felder leeren
-      document.getElementById("thought").value = "";
-      document.getElementById("tags").value = "";
-      document.getElementById("image").value = "";
+      document.getElementById("entries").appendChild(entryElement);
     }
 
-    function addComment(commentsSection, commentText) {
-      if (!commentText.trim()) return;
+    function renderEntries() {
+      document.getElementById("entries").innerHTML = "";
+      entries.forEach(entry => renderEntry(entry));
+    }
 
-      const commentElement = document.createElement("div");
-      commentElement.className = "comment";
-      commentElement.textContent = commentText;
-      commentsSection.appendChild(commentElement);
+    function updateTOC() {
+      const tocList = document.getElementById("toc-list");
+      tocList.innerHTML = "";
+      entries.forEach(entry => {
+        const link = document.createElement("a");
+        link.href = `#entry-${entry.id}`;
+        link.textContent = entry.thought || "Eintrag ohne Text";
+        tocList.appendChild(link);
+        tocList.appendChild(document.createElement("br"));
+      });
+    }
+
+    function filterEntries() {
+      const searchText = document.getElementById("search-tags").value.toLowerCase();
+      entries.forEach(entry => {
+        const entryElement = document.getElementById(`entry-${entry.id}`);
+        if (entry.tags.toLowerCase().includes(searchText)) {
+          entryElement.style.display = "block";
+        } else {
+          entryElement.style.display = "none";
+        }
+      });
     }
   </script>
 </body>
